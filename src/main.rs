@@ -17,6 +17,8 @@ enum Commands {
         #[arg(long)]
         to_scots: bool,
     },
+    Chat,
+
 }
 
 fn load_dict() -> HashMap<String, String> {
@@ -80,6 +82,29 @@ fn translate(text: &str, dict: &HashMap<String, String>) -> String {
     let dict = load_dict();
 
     match cli.command {
+                Commands::Chat => {
+            use std::io::{self, Write};
+
+            println!("Fixer: Alright, what ye got? (type 'exit' to quit)");
+
+            loop {
+                print!("> ");
+                io::stdout().flush().unwrap();
+
+                let mut input = String::new();
+                io::stdin().read_line(&mut input).unwrap();
+
+                let input = input.trim();
+
+                if input == "exit" {
+                    println!("Fixer: Catch ye later.");
+                    break;
+                }
+
+                let result = translate(input, &dict);
+                println!("Fixer: {}", result);
+            }
+        }
         Commands::Fix { text, to_scots } => {
             let active = if to_scots { reverse_dict(&dict) } else { dict };
 
