@@ -29,28 +29,53 @@ fn reverse_dict(dict: &HashMap<String, String>) -> HashMap<String, String> {
 }
 
 fn translate(text: &str, dict: &HashMap<String, String>) -> String {
-    let lower = text.to_lowercase();
+    let mut result = Vec::new();
 
-    // 1. phrase-level match
-    for (k, v) in dict {
-        if k.contains(" ") && lower.contains(k) {
-            return lower.replace(k, v);
+    for token in text.split_whitespace() {
+        let mut word = token.to_string();
+
+        let mut prefix = String::new();
+        let mut suffix = String::new();
+
+        // handle prefix punctuation
+        if let Some(first) = word.chars().next() {
+            if !first.is_alphanumeric() {
+                prefix.push(first);
+                word = word.chars().skip(1).collect();
+            }
         }
+
+        // handle suffix punctuation
+        if let Some(last) = word.chars().last() {
+            if !last.is_alphanumeric() {
+                suffix.insert(0, last);
+                word = word.chars().take(word.len() - 1).collect();
+            }
+        }
+
+        let lower = word.to_lowercase();
+
+        let mut translated = dict
+            .get(&lower)
+            .cloned()
+            .unwrap_or(word.clone());
+
+        // capitalisation fix (safe)
+        if word.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+            let mut chars: Vec<char> = translated.chars().collect();
+            if let Some(first) = chars.get_mut(0) {
+                first.make_ascii_uppercase();
+            }
+            translated = chars.into_iter().collect();
+        }
+
+        let final_word = format!("{}{}{}", prefix, translated, suffix);
+        result.push(final_word);
     }
 
-    // 2. fallback word-by-word
-    lower
-        .split_whitespace()
-        .map(|word| {
-            dict.get(word)
-                .cloned()
-                .unwrap_or(word.to_string())
-        })
-        .collect::<Vec<_>>()
-        .join(" ")
-} 
+    result.join(" ")
 
-fn main() {
+}fn main() {
     let cli = Cli::parse();
     let dict = load_dict();
 
