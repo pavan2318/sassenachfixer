@@ -77,7 +77,29 @@ fn translate(text: &str, dict: &HashMap<String, String>) -> String {
 
     result.join(" ")
 
-}fn main() {
+}
+fn detect_direction(text: &str, dict: &HashMap<String, String>) -> bool {
+    let mut scots_score = 0;
+    let mut english_score = 0;
+
+    let reverse: HashMap<String, String> =
+        dict.iter().map(|(k, v)| (v.clone(), k.clone())).collect();
+
+    for word in text.to_lowercase().split_whitespace() {
+        if dict.contains_key(word) {
+            scots_score += 1;
+        }
+        if reverse.contains_key(word) {
+            english_score += 1;
+        }
+    }
+
+    // true = to_scots, false = to_english
+    english_score > scots_score
+}
+
+
+fn main() {
     let cli = Cli::parse();
     let dict = load_dict();
 
@@ -101,7 +123,15 @@ fn translate(text: &str, dict: &HashMap<String, String>) -> String {
                     break;
                 }
 
-                let result = translate(input, &dict);
+                let to_scots = detect_direction(input, &dict);
+
+let active_dict = if to_scots {
+    dict.iter().map(|(k, v)| (v.clone(), k.clone())).collect()
+} else {
+    dict.clone()
+};
+
+let result = translate(input, &active_dict);
                 println!("Fixer: {}", result);
             }
         }
