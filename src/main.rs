@@ -29,14 +29,26 @@ fn reverse_dict(dict: &HashMap<String, String>) -> HashMap<String, String> {
 }
 
 fn translate(text: &str, dict: &HashMap<String, String>) -> String {
-    text.split_whitespace()
+    let lower = text.to_lowercase();
+
+    // 1. phrase-level match
+    for (k, v) in dict {
+        if k.contains(" ") && lower.contains(k) {
+            return lower.replace(k, v);
+        }
+    }
+
+    // 2. fallback word-by-word
+    lower
+        .split_whitespace()
         .map(|word| {
-            let key = word.to_lowercase();
-            dict.get(&key).cloned().unwrap_or(word.to_string())
+            dict.get(word)
+                .cloned()
+                .unwrap_or(word.to_string())
         })
         .collect::<Vec<_>>()
         .join(" ")
-}
+} 
 
 fn main() {
     let cli = Cli::parse();
