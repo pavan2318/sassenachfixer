@@ -20,7 +20,7 @@ enum Commands {
 }
 
 fn load_dict() -> HashMap<String, String> {
-    let data = fs::read_to_string("dictionary.json").expect("Couldnae read dictionary.json");
+    let data = fs::read_to_string("data/dictionary.json").expect("Couldnae read dictionary.json");
     serde_json::from_str(&data).expect("Bad JSON, mate")
 }
 
